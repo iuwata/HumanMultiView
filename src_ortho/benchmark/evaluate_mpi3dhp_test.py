@@ -101,7 +101,7 @@ def get_pred_dir(base_dir, load_path):
 def get_seqs():
     st = 0
     l = 6
-    all_pairs = [('%04d'%i) for i in range(st, st+l)]
+    all_pairs = [('%04d' % i) for i in range(st, st+l)]
 
     return all_pairs
 
@@ -139,7 +139,7 @@ def run_model(images, config):
     # Batch + preprocess..
     batch_size = config.batch_size
     num_total_batches = int(np.ceil(float(N) / batch_size))
-    for b in xrange(num_total_batches):
+    for b in range(num_total_batches):
         print('Batch %d/%d' % (b, num_total_batches))
         start_ind = b * batch_size
         end_ind = (b + 1) * batch_size
@@ -198,7 +198,7 @@ def add_visuals(errors, results, images, kps, pred3ds, gt3ds):
     # Record extreme ones
     sort_inds = np.argsort(errors)[::-1]
     # Save top/worst 10.
-    for i in xrange(10):
+    for i in range(10):
         ind = sort_inds[i]
         indd4 = ind
         content = {
@@ -220,7 +220,7 @@ def add_visuals(errors, results, images, kps, pred3ds, gt3ds):
             'vert': [results['verts'][view][best_indd4] for view in range(4)],
             'joint': [results['joints'][view][best_indd4] for view in range(4)],
             'image': [images[best_indd4][view] for view in range(4)],
-            'kp': [kps[best_indd4][view][:,:2] for view in range(4)],
+            'kp': [kps[best_indd4][view][:, :2] for view in range(4)],
             'pred3ds': [pred3ds[best_indd4][view] for view in range(4)],
             'gt3ds': [gt3ds[best_indd4][view] for view in range(4)],
             'cam': [results['cams'][view][best_indd4] for view in range(4)],
@@ -357,7 +357,7 @@ def main(config):
         plt.figure(1)
         plt.clf()
         sort_inds = np.argsort(extreme_errors)[::-1]
-        for i in xrange(30):
+        for i in range(30):
             for j in range(4):
                 bad_ind = sort_inds[i]
                 bad_error = extreme_errors[bad_ind]

@@ -47,9 +47,9 @@ def parse_example_proto(example_serialized, num_view, has_3d=True):
         'image/y':
         tf.FixedLenFeature((num_view, 1, 14), dtype=tf.float32),
         'image/face_pts':
-        tf.FixedLenFeature((num_view,3,5),dtype=tf.float32,default_value=np.zeros((num_view,3,5))),
-        'meta/has_3djoint': # only for differing coco and h36m
-        tf.FixedLenFeature([1],dtype=tf.int64, default_value=True),
+        tf.FixedLenFeature((num_view, 3, 5), dtype=tf.float32, default_value=np.zeros((num_view, 3, 5))),
+        'meta/has_3djoint':  # only for differing coco and h36m
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=True),
     }
     if num_view == 4:
         num_3d = 2
@@ -58,11 +58,11 @@ def parse_example_proto(example_serialized, num_view, has_3d=True):
     if has_3d:
         feature_map.update({
             'mosh/pose':
-            tf.FixedLenFeature((num_view, 72), dtype=tf.float32,default_value=np.zeros((num_view,72))),
+            tf.FixedLenFeature((num_view, 72), dtype=tf.float32, default_value=np.zeros((num_view, 72))),
             'mosh/shape':
-            tf.FixedLenFeature((num_view, 10), dtype=tf.float32,default_value=np.zeros((num_view,10))),
+            tf.FixedLenFeature((num_view, 10), dtype=tf.float32, default_value=np.zeros((num_view, 10))),
             'mosh/gt3d':
-            tf.FixedLenFeature((num_view, 14 * 3), dtype=tf.float32,default_value=np.zeros((num_view,14*3))),
+            tf.FixedLenFeature((num_view, 14 * 3), dtype=tf.float32, default_value=np.zeros((num_view, 14*3))),
             # has_3d is for pose and shape: 0 for mpi_inf_3dhp, 1 for h3.6m.
             # has_3d = [has_3d_joint, has_3d_smpl]
             'meta/has_3d':
@@ -83,10 +83,10 @@ def parse_example_proto(example_serialized, num_view, has_3d=True):
     face = tf.cast(features['image/face_pts'], dtype=tf.float32)
 
     label = tf.concat([x, y, vis], 1)
-    label = tf.concat([label,face], 2)
+    label = tf.concat([label, face], 2)
     image = [decode_jpeg(features['image/encoded'][i]) for i in range(num_view)]
     image_size = tf.concat([height, width], 1)
-    has_3djoint = tf.cast(features['meta/has_3djoint'],dtype=tf.bool)
+    has_3djoint = tf.cast(features['meta/has_3djoint'], dtype=tf.bool)
 
     if has_3d:
         pose = tf.cast(features['mosh/pose'], dtype=tf.float32)
@@ -247,7 +247,7 @@ def random_flip(image, kp, pose=None, gt3d=None):
     """
 
     uniform_random = tf.random_uniform([], 0, 1.0)
-    mirror_cond = tf.less(uniform_random, -1.) # block flip for multi view
+    mirror_cond = tf.less(uniform_random, -1.)  # block flip for multi view
 
     if pose is not None:
         new_image, new_kp, new_pose, new_gt3d = tf.cond(

@@ -65,7 +65,7 @@ def Encoder_fc3_dropout(x,
 
     Outputs:
     - 3D params: N x num_output
-      if orthogonal: 
+      if orthogonal:
            either 85: (3 + 24*3 + 10) or 109 (3 + 24*4 + 10) for factored axis-angle representation
       if perspective:
           86: (f, tx, ty, tz) + 24*3 + 10, or 110 for factored axis-angle.

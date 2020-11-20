@@ -387,7 +387,7 @@ def draw_skeleton(input_image, joints, draw_edges=True, vis=None, radius=None):
         import ipdb
         ipdb.set_trace()
 
-    for child in xrange(len(parents)):
+    for child in range(len(parents)):
         point = joints[:, child]
         # If invisible skip
         if vis is not None and vis[child] == 0:

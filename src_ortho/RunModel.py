@@ -21,7 +21,7 @@ class RunModel(object):
         """
         self.config = config
         self.load_path = config.load_path
-        
+
         # Config + path
         if not config.load_path:
             raise Exception(
@@ -108,7 +108,7 @@ class RunModel(object):
         self.img_feat, self.E_var = [],[]
         for i in range(self.num_views):
             tmp0, tmp1 = img_enc_fn(
-            self.images_pl[:,i%self.num_true_views,:,:], is_training=False, reuse=(i>0))
+              self.images_pl[:, i % self.num_true_views, :, :], is_training=False, reuse=(i > 0))
             self.img_feat.append(tmp0)
             self.E_var.append(tmp1)
         self.E_var = self.E_var[0]
@@ -149,7 +149,7 @@ class RunModel(object):
         # use last pred as global pred
         for i in range(0, self.num_views):
             theta_here = tf.concat([theta_prev[i][:, :self.num_cam+3], theta_prev[0][:, self.num_cam+3:]], axis=1)
-            cams = theta_here[:, :self.num_cam]                
+            cams = theta_here[:, :self.num_cam]
             poses = theta_here[:, self.num_cam:(self.num_cam + self.num_theta)]
             shapes = theta_here[:, (self.num_cam + self.num_theta):]
             verts, Js, _ = self.smpl(shapes, poses, get_skin=True)
@@ -166,7 +166,7 @@ class RunModel(object):
 
     def prepare(self):
         print('Restoring checkpoint %s..' % self.load_path)
-        self.saver.restore(self.sess, self.load_path)        
+        self.saver.restore(self.sess, self.load_path)
         self.mean_value = self.sess.run(self.mean_var)
             
     def predict(self, images, get_theta=False):
@@ -230,6 +230,6 @@ class RunModel(object):
         # Return joints in original image space.
         joints = np.array(results['joints'])
         results['joints'] = ((joints + 1) * 0.5) * self.img_size
-        #print(results['theta'])
-        #results['theta'] = results['theta'][0:1]
+        # print(results['theta'])
+        # results['theta'] = results['theta'][0:1]
         return results

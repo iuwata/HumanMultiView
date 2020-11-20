@@ -20,8 +20,8 @@ _MV_DATASETS = ['mpi_inf_3dhp', 'synthetic']
 
 def num_examples(datasets):
     _NUM_TRAIN = {
-        'mpi_inf_3dhp': 15451, # 1618 for val
-        'synthetic': 28972, #3952 #43856, # 5942 for val
+        'mpi_inf_3dhp': 15451,  # 1618 for val
+        'synthetic': 28972,  # 3952 # 43856, # 5942 for val
         'h36m': 44423,
         'coco': 0,
     }
@@ -130,7 +130,7 @@ class DataLoader(object):
         if len(files_yesmv) != 0:
             fqueue_yesmv = tf.train.string_input_producer(
                 files_yesmv, shuffle=do_shuffle, name="input_wmv")
-            image, label, label3d, has_smpl3d, pose,_ = self.read_data(
+            image, label, label3d, has_smpl3d, pose, _ = self.read_data(
                 fqueue_yesmv, has_multiview=True)
             if len(files_nomv) != 0:
                 fqueue_nomv = tf.train.string_input_producer(
@@ -168,11 +168,11 @@ class DataLoader(object):
         min_after_dequeue = 2000
         capacity = min_after_dequeue + 3 * self.batch_size
 
-        print('image.shape=',image.shape)
-        print('label.shape=',label.shape)
-        print('label3d.shape=',label3d.shape)
-        print('has_3dgt.shape=',has_3dgt.shape)
-        print('pose.shape=',pose.shape)
+        print('image.shape=', image.shape)
+        print('label.shape=', label.shape)
+        print('label3d.shape=', label3d.shape)
+        print('has_3dgt.shape=', has_3dgt.shape)
+        print('pose.shape=', pose.shape)
         image_batch, label_batch, label3d_batch, bool_batch, pose_batch = tf.train.shuffle_batch(
             [image, label, label3d, has_3dgt, pose],
             batch_size=self.batch_size,
@@ -251,14 +251,14 @@ class DataLoader(object):
             reader = tf.TFRecordReader()
             _, example_serialized = reader.read(filename_queue)
             if has_multiview:
-                (image, image_size, label, center, fname, pose, shape, gt3d, 
+                (image, image_size, label, center, fname, pose, shape, gt3d,
                     has_smpl3d, has_3djoint) = data_utils.parse_example_proto(example_serialized, num_view=4)
 
                 # Need to send pose bc image can get flipped.
                 image, label, pose, gt3d = self.image_preprocessing(
                     image, image_size, label, center, poses=pose, gt3ds=gt3d)
                 # random roll
-                ind = tf.constant([0,1,2,3], dtype=tf.int32)
+                ind = tf.constant([0, 1, 2, 3], dtype=tf.int32)
                 # st = tf.random_uniform([1], maxval=4, dtype=tf.int32)
                 # ind = tf.manip.roll(ind, shift=st, axis=[0])
                 p = tf.random_uniform([], dtype=tf.float32)
@@ -273,7 +273,7 @@ class DataLoader(object):
                 gt3d = tf.gather(gt3d, ind)
 
             else:
-                (image, image_size, label, center, fname, pose, shape, gt3d, 
+                (image, image_size, label, center, fname, pose, shape, gt3d,
                     has_smpl3d, has_3djoint) = data_utils.parse_example_proto(example_serialized, num_view=1)
                 image = tf.tile(image, [4, 1, 1, 1])
                 image_size = tf.tile(image_size, [4, 1])
@@ -282,13 +282,13 @@ class DataLoader(object):
                 fname = tf.tile(fname, [4])
                 # h36m upside down
                 tmp = batch_rodrigues_back(tf.matmul(
-                    batch_rodrigues(tf.constant([[np.pi,0,0]], tf.float32)),
-                    batch_rodrigues(pose[:,:3])
-                    )) # 1*3
+                    batch_rodrigues(tf.constant([[np.pi, 0, 0]], tf.float32)),
+                    batch_rodrigues(pose[:, :3])
+                    ))  # 1*3
                 # h36m pose independent on cam, not useful
                 has_smpl3d = [False]
                 # with tf.control_dependencies([tf.assert_equal(tmp, pose[:,:3])]):
-                pose = tf.concat([tmp, pose[:,3:]], axis=1)
+                pose = tf.concat([tmp, pose[:, 3:]], axis=1)
                 pose = tf.tile(pose, [4, 1])
                 shape = tf.tile(shape, [4, 1])
                 gt3d = tf.tile(gt3d, [4, 1, 1])

@@ -121,7 +121,7 @@ class HMRTrainer(object):
         self.optimizer = tf.train.AdamOptimizer
 
         # Instantiate SMPL
-        self.smpl = SMPL(self.smpl_model_path,joint_type='cocoplus')
+        self.smpl = SMPL(self.smpl_model_path, joint_type='cocoplus')
         self.E_var = []
         self.build_model()
 
@@ -207,11 +207,11 @@ class HMRTrainer(object):
     def build_model(self):
         img_enc_fn, threed_enc_fn = get_encoder_fn_separate(self.model_type)
         # Extract image features.
-        self.img_feat, self.E_var = [],[]
+        self.img_feat, self.E_var = [], []
         self.num_views = 4
         for i in range(self.num_views):
             tmp0, tmp1 = img_enc_fn(
-            self.image_loader[:,i,:,:], weight_decay=self.e_wd, reuse=(i>0))
+              self.image_loader[:, i, :, :], weight_decay=self.e_wd, reuse=(i > 0))
             self.img_feat.append(tmp0)
             self.E_var.append(tmp1)
         self.E_var = self.E_var[0]
@@ -264,8 +264,8 @@ class HMRTrainer(object):
                 poses = theta_here[:, self.num_cam:(self.num_cam + self.num_theta)]
                 shapes = theta_here[:, (self.num_cam + self.num_theta):]
                 gt_cams = theta_prior[:, :self.num_cam]
-                gt_poses = self.oripose_loader[:,i,:]
-                gt_shapes = self.poseshape_loader[:,i,216:226]
+                gt_poses = self.oripose_loader[:, i, :]
+                gt_shapes = self.poseshape_loader[:, i, 216:226]
                 # Rs_wglobal is Nx24x3x3 rotation matrices of poses
                 verts, Js, pred_Rs = self.smpl(shapes, poses, get_skin=True)
                 gt_verts, gtJs, _ = self.smpl(gt_shapes, gt_poses, get_skin=True)
@@ -309,7 +309,7 @@ class HMRTrainer(object):
         with tf.name_scope("gather_e_loss"):
             # Just the last loss.
             gamma = 1.0
-            # self.e_loss_kp = (tf.reduce_mean(loss_kps[-self.num_views:]) + 
+            # self.e_loss_kp = (tf.reduce_mean(loss_kps[-self.num_views:]) +
             #     loss_kps[-self.num_views] * (gamma-1)) / (gamma+self.num_views-1)
             self.e_loss_kp = tf.reduce_mean(loss_kps[-self.num_views:])
 
@@ -369,7 +369,7 @@ class HMRTrainer(object):
             tf.summary.scalar("loss/e_loss", self.e_loss),
         ]
         for i in range(self.num_views):
-            always_report.append(tf.summary.scalar("loss/e_loss_kp_view%d"%i, 
+            always_report.append(tf.summary.scalar("loss/e_loss_kp_view%d" % i,
                 loss_kps[-self.num_views+i] / self.e_loss_weight))
         if self.encoder_only:
             print('ENCODER ONLY!!!')
@@ -496,7 +496,7 @@ class HMRTrainer(object):
         gt_joints = tf.reshape(gt_joints, [self.batch_size, -1])
 
         loss_joints = self.e_3d_weight * compute_3d_loss(
-            pred_joints, gt_joints, tf.cast(self.has_gt3d_joints,tf.float32)*(1-tf.cast(self.has_gt3d_smpl,tf.float32)))
+            pred_joints, gt_joints, tf.cast(self.has_gt3d_joints, tf.float32) * (1-tf.cast(self.has_gt3d_smpl, tf.float32)))
 
         return loss_pose, loss_shape, loss_joints
 
@@ -526,7 +526,7 @@ class HMRTrainer(object):
         #     input_img = renderer(gt_vert + cam_t, cam_for_render, img=input_img) / 255.
         img_with_gt = vis_util.draw_skeleton(
             input_img, gt_joint, draw_edges=False, vis=gt_vis)
-        skel_img = img_with_gt #vis_util.draw_skeleton(img_with_gt, pred_joint)
+        skel_img = img_with_gt  # vis_util.draw_skeleton(img_with_gt, pred_joint)
         rend_img = vis_util.draw_skeleton(rend_img / 255., pred_joint)
 
         combined = np.hstack([skel_img, rend_img])
@@ -546,7 +546,7 @@ class HMRTrainer(object):
         # B x4* 19 x 3
         gt_kps = result["gt_kp"]
         if self.data_format == 'NCHW':
-            imgs = np.transpose(imgs, [0,1,  3, 4, 2])
+            imgs = np.transpose(imgs, [0, 1, 3, 4, 2])
         # This is B x T x 6890 x 3
         est_verts = result["e_verts"]
         # B x T x 19 x 2
@@ -562,10 +562,10 @@ class HMRTrainer(object):
                 zip(imgs, gt_kps, est_verts, jointss, camss, gt_vertss, has_gt3d_smplss)):
             # verts, joints, cams are a list of len T.
             all_rend_imgs = []
-            for cam_id, (vert, joint, cam, gt_vert, has_gt3d_smpl) in enumerate(zip(verts[-4:], 
-                        joints[-4:], cams[-4:], gt_verts[-4:], has_gt3d_smpls[-4:])):
+            for cam_id, (vert, joint, cam, gt_vert, has_gt3d_smpl) in enumerate(zip(verts[-4:],
+              joints[-4:], cams[-4:], gt_verts[-4:], has_gt3d_smpls[-4:])):
                 view_id = cam_id
-                rend_img = self.visualize_img(img[view_id%4], gt_kp[view_id%4], vert, joint, cam,
+                rend_img = self.visualize_img(img[view_id % 4], gt_kp[view_id % 4], vert, joint, cam,
                                               self.renderer, gt_vert, has_gt3d_smpl)
                 all_rend_imgs.append(rend_img)
             combined = np.vstack(all_rend_imgs)

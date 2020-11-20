@@ -96,7 +96,7 @@ def get_pred_dir(base_dir, load_path):
 
 
 def get_seqs():
-    all_pairs = [('%04d'%i) for i in range(8)]
+    all_pairs = [('%04d' % i) for i in range(8)]
 
     return all_pairs
 
@@ -136,7 +136,7 @@ def run_model(images, config, gtpose, gtshape):
         model = RunModel(config, 4, num_views, sess=sess)
         tens_shape = tf.placeholder(tf.float32, shape=[N, num_views, 10])
         tens_pose = tf.placeholder(tf.float32, shape=[N, num_views, 72])
-        tens_verts, _, _ = model.smpl(tf.reshape(tens_shape, [-1, 10]), tf.reshape(tens_pose, [-1, 72]), 
+        tens_verts, _, _ = model.smpl(tf.reshape(tens_shape, [-1, 10]), tf.reshape(tens_pose, [-1, 72]),
             get_skin=True)
         tens_verts = tf.reshape(tens_verts, [N, num_views, -1, 3])
         print(tens_pose)
@@ -153,7 +153,7 @@ def run_model(images, config, gtpose, gtshape):
 
     # Batch + preprocess..
     num_total_batches = int(np.ceil(float(N) / batch_size))
-    for b in xrange(num_total_batches):
+    for b in range(num_total_batches):
         print('Batch %d/%d' % (b, num_total_batches))
         start_ind = b * batch_size
         end_ind = (b + 1) * batch_size
@@ -193,7 +193,7 @@ def run_model(images, config, gtpose, gtshape):
         'joints3d': np.hstack(all_joints3d),
         'thetas': np.hstack(all_thetas)
     }
-    predshape = np.array(preds['thetas'])[:,:,-10:].transpose((1,0,2))
+    predshape = np.array(preds['thetas'])[:, :, -10:].transpose((1, 0, 2))
     if N < tens_len:
         predshape = np.vstack([predshape, np.zeros((tens_len - N, num_views, 10))])
     pfverts = sess.run(tens_verts, feed_dict={tens_shape:predshape,
@@ -217,14 +217,14 @@ def add_visuals(errors, results, images):
     # Record extreme ones
     sort_inds = np.argsort(errors)[::-1]
     # Save top/worst 10.
-    for i in xrange(4):
+    for i in range(4):
         ind = sort_inds[i]
         indd4 = int(np.floor(ind/4))
         content = {
-            'vert': results['verts'][ind%4][indd4],
-            'joint': results['joints'][ind%4][indd4],
-            'image': images[indd4][ind%4],
-            'cam': results['cams'][ind%4][indd4],
+            'vert': results['verts'][ind % 4][indd4],
+            'joint': results['joints'][ind % 4][indd4],
+            'image': images[indd4][ind % 4],
+            'cam': results['cams'][ind % 4][indd4],
         }
         extreme_errors.append(errors[ind])
         contents.append(content)
@@ -232,10 +232,10 @@ def add_visuals(errors, results, images):
         best_ind = sort_inds[-(i + 1)]
         best_indd4 = int(np.floor(best_ind/4))
         content = {
-            'vert': results['verts'][best_ind%4][best_indd4],
-            'joint': results['joints'][best_ind%4][best_indd4],
-            'image': images[best_indd4][best_ind%4],
-            'cam': results['cams'][best_ind%4][best_indd4],
+            'vert': results['verts'][best_ind % 4][best_indd4],
+            'joint': results['joints'][best_ind % 4][best_indd4],
+            'image': images[best_indd4][best_ind % 4],
+            'cam': results['cams'][best_ind % 4][best_indd4],
         }
         extreme_errors.append(errors[best_ind])
         contents.append(content)
@@ -251,7 +251,7 @@ def evaluate_sequence(seq_info, pred_dir):
         errors_pa = results['errors_pa']
         error_haus = results['error_haus']
         error_pa_haus = results['error_pa_haus']
-        error_pf_haus = results['error_pf_haus'] #pose fixed haus
+        error_pf_haus = results['error_pf_haus']  #pose fixed haus
         if config.vis:
             # Need to load images too..
             images, gt3ds, poses, shapes = get_data(seq_info, config)
@@ -376,7 +376,7 @@ def main(config):
         plt.figure(1)
         plt.clf()
         sort_inds = np.argsort(extreme_errors)[::-1]
-        for i in xrange(30):
+        for i in range(30):
             bad_ind = sort_inds[i]
             bad_error = extreme_errors[bad_ind]
             bad_img = draw_content(contents[bad_ind], config)

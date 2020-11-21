@@ -11,7 +11,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-#import cPickle as pickle
+# import cPickle as pickle
 import _pickle as pickle
 
 import tensorflow as tf
@@ -30,8 +30,9 @@ class SMPL(object):
         """
         # -- Load SMPL params --
         mdl = '/scratch1/smplify_public/code/models/basicModel_neutral_lbs_10_207_0_v1.0.0.pkl'
-        with open(pkl_path, 'r') as f:
-            dd = pickle.load(f)    
+        with open(pkl_path, 'rb') as f:
+            dd = pickle.load(f, encoding="latin1")
+            print(dd)
         # Mean template vertices
         self.v_template = tf.Variable(
             undo_chumpy(dd['v_template']),
@@ -74,8 +75,8 @@ class SMPL(object):
             trainable=False)
 
         # This returns 19 keypoints: 6890 x 19
-        with open(pkl_path, 'r') as f:
-            dd = pickle.load(f)    
+        with open(pkl_path, 'rb') as f:
+            dd = pickle.load(f, encoding="latin1")
         self.joint_regressor = tf.Variable(
             dd['cocoplus_regressor'].T.todense(),
             name="cocoplus_regressor",

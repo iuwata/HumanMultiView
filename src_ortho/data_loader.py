@@ -144,7 +144,7 @@ class DataLoader(object):
                 has_3dgt = tf.parallel_stack([has_smpl3d, has_smpl3d_nomv])
                 pose = tf.parallel_stack([pose, pose_nomv])
             else:
-                assert False
+                # assert False
                 # If no "no3d" images, need to make them 1 x *
                 image = tf.expand_dims(image, 0)
                 label = tf.expand_dims(label, 0)

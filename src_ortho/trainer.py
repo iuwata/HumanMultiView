@@ -121,6 +121,7 @@ class HMRTrainer(object):
         self.optimizer = tf.train.AdamOptimizer
 
         # Instantiate SMPL
+        print("smpl_model_path : ", self.smpl_model_path)
         self.smpl = SMPL(self.smpl_model_path, joint_type='cocoplus')
         self.E_var = []
         self.build_model()

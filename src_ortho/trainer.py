@@ -11,7 +11,7 @@ from __future__ import print_function
 from .data_loader import num_examples
 
 from .ops import keypoint_l1_loss, compute_3d_loss, align_by_pelvis
-from .models import Discriminator_separable_rotations, get_encoder_fn_separate
+from .models import Discriminator_separable_rotations, get_encoder_fn_separate, Encoder_efficientnet
 
 from .tf_smpl.batch_lbs import batch_rodrigues
 from .tf_smpl.batch_smpl import SMPL
@@ -124,32 +124,44 @@ class HMRTrainer(object):
         print("smpl_model_path : ", self.smpl_model_path)
         self.smpl = SMPL(self.smpl_model_path, joint_type='cocoplus')
         self.E_var = []
+        self.efficientnet_var = []
         self.build_model()
 
         # Logging
         init_fn = None
+
+        def initialize_model(sess):
+            sess.run(tf.global_variables_initializer())
+        init_fn = initialize_model
         if self.use_pretrained():
-            # Make custom init_fn
-            print("Fine-tuning from %s" % self.pretrained_model_path)
-            if 'resnet_v2_50' in self.pretrained_model_path:
-                resnet_vars = [
-                    var for var in self.E_var if 'resnet_v2_50' in var.name
-                ]
-                self.pre_train_saver = tf.train.Saver(resnet_vars)
-            elif 'pose-tensorflow' in self.pretrained_model_path:
-                resnet_vars = [
-                    var for var in self.E_var if 'resnet_v1_101' in var.name
-                ]
-                self.pre_train_saver = tf.train.Saver(resnet_vars)
-            else:
-                load_vars = [i for i in tf.global_variables() if i.name != 'global_step:0']
-                self.pre_train_saver = tf.train.Saver(load_vars)
+            if 'resnet' in self.model_type:
+                # Make custom init_fn
+                print("Fine-tuning from %s" % self.pretrained_model_path)
+                if 'resnet_v2_50' in self.pretrained_model_path:
+                    resnet_vars = [
+                        var for var in self.E_var if 'resnet_v2_50' in var.name
+                    ]
+                    self.pre_train_saver = tf.train.Saver(resnet_vars)
+                elif 'pose-tensorflow' in self.pretrained_model_path:
+                    resnet_vars = [
+                        var for var in self.E_var if 'resnet_v1_101' in var.name
+                    ]
+                    self.pre_train_saver = tf.train.Saver(resnet_vars)
+                else:
+                    load_vars = [i for i in tf.global_variables() if i.name != 'global_step:0']
+                    self.pre_train_saver = tf.train.Saver(load_vars)
+                    # print("load_vars", load_vars)
+            if 'efficientnet' in self.model_type:
+                print("Fine-tuning from %s" % self.pretrained_model_path)
+                efficientnet_vars = [i for i in self.efficientnet_var]
+                self.pre_train_saver = tf.train.Saver(efficientnet_vars)
 
             def load_pretrain(sess):
                 self.pre_train_saver.restore(sess, self.pretrained_model_path)
 
             init_fn = load_pretrain
 
+        print(tf.global_variables())
         self.saver = tf.train.Saver(keep_checkpoint_every_n_hours=1)
         self.summary_writer = tf.summary.FileWriter(self.model_dir)
         self.sv = tf.train.Supervisor(
@@ -172,7 +184,7 @@ class HMRTrainer(object):
           3. model_dir is NOT empty, meaning we're picking up from previous
              so fuck this pretrained model.
         """
-        if ('resnet' in self.model_type) and (self.pretrained_model_path is
+        if ('resnet' or 'efficientnet' in self.model_type) and (self.pretrained_model_path is
                                               not None):
             # Check is model_dir is empty
             import os
@@ -207,6 +219,9 @@ class HMRTrainer(object):
 
     def build_model(self):
         img_enc_fn, threed_enc_fn = get_encoder_fn_separate(self.model_type)
+        # Encoder_efficientnet(self.image_loader[:,1,:,:])
+        # print("self.pretrained_model_path : ", self.pretrained_model_path)
+        # print("self.model_dir : ", self.model_dir)
         # Extract image features.
         self.img_feat, self.E_var = [], []
         self.num_views = 4
@@ -216,6 +231,10 @@ class HMRTrainer(object):
             self.img_feat.append(tmp0)
             self.E_var.append(tmp1)
         self.E_var = self.E_var[0]
+        self.efficientnet_var = [var for var in self.E_var]
+        # print("variables.len : ", len(self.E_var))
+        # print("variables", self.E_var)
+        # print("variables : ", [len(v) for v in self.E_var])
 
         loss_kps = []
         if self.use_3d_label:

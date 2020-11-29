@@ -18,7 +18,24 @@ from __future__ import print_function
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
+from keras.models import Model
+from efficientnet.keras import EfficientNetB0
+
 from tensorflow.contrib.layers.python.layers.initializers import variance_scaling_initializer
+
+
+def Encoder_efficientnet(x, is_training=None, weight_decay=None, reuse=None):
+    efficientnet_model = EfficientNetB0(include_top=False, input_tensor=x, pooling='avg')
+    net = efficientnet_model.output
+    weights = efficientnet_model.weights
+    # print("efficientnet_model.weights", weights)
+    # weights = efficientnet_model.get_weights()
+    # print("efficientnet.shape : ", net.shape)
+    # print("efficientnet.weights.len : ", len(weights))
+    # print("efficientnet.weights[0] : ", weights[0])
+    # print("efficientnet.weights : ")
+    # print([len(v) for v in weights])
+    return net, weights
 
 
 def Encoder_resnet(x, is_training=True, weight_decay=0.001, reuse=False):
@@ -48,6 +65,8 @@ def Encoder_resnet(x, is_training=True, weight_decay=0.001, reuse=False):
                 scope='resnet_v2_50')
             net = tf.squeeze(net, axis=[1, 2])
     variables = tf.contrib.framework.get_variables('resnet_v2_50')
+    print("net.shape : ", net.shape)
+    #print("variables : ", variables)
     return net, variables
 
 
@@ -99,6 +118,8 @@ def get_encoder_fn_separate(model_type):
     threed_fn = None
     if 'resnet' in model_type:
         encoder_fn = Encoder_resnet
+    elif 'efficientnet' in model_type:
+        encoder_fn = Encoder_efficientnet
     else:
         print('Unknown encoder %s!' % model_type)
         exit(1)

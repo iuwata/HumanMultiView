@@ -32,7 +32,6 @@ class SMPL(object):
         mdl = '/scratch1/smplify_public/code/models/basicModel_neutral_lbs_10_207_0_v1.0.0.pkl'
         with open(pkl_path, 'rb') as f:
             dd = pickle.load(f, encoding="latin1")
-            print(dd)
         # Mean template vertices
         self.v_template = tf.Variable(
             undo_chumpy(dd['v_template']),
